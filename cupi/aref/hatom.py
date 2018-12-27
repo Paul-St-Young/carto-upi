@@ -19,7 +19,7 @@ def hatom_energy(beta, nmax=4000):
   myn = np.arange(1, nmax)
   en = -1./(2*myn**2)
   # calculate Boltzmann factors
-  # mult = 2*myn+1  # ??? how does angular momentum come in?
-  bfac = np.exp(-beta*en)
+  mult = myn**2  # multiplicity due to angular states
+  bfac = mult*np.exp(-beta*en)
   part = bfac.sum()
   return np.dot(bfac, en)/part
