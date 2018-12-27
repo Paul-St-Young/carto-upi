@@ -4,6 +4,8 @@ def hatom_energy(beta, nmax=4000):
   """Calculate the energy of a hydrogen atom at inverse temperature beta
   assume clamped proton and non-relativistic kinetic energy
 
+  !!!! WARNING: sum does not converge
+
   Args:
     beta (float): inverse temperature in hartree atomic units
     nmax (int): number of excited states to sum over
@@ -17,6 +19,7 @@ def hatom_energy(beta, nmax=4000):
   myn = np.arange(1, nmax)
   en = -1./(2*myn**2)
   # calculate Boltzmann factors
+  # mult = 2*myn+1  # ??? how does angular momentum come in?
   bfac = np.exp(-beta*en)
   part = bfac.sum()
   return np.dot(bfac, en)/part
