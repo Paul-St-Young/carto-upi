@@ -17,7 +17,7 @@ def gen_grid(fp, path):
 
   Raises:
     RuntimeError: path name does not end with 'Grid'
-    NotImplementedError: unrecognized grid type
+    RuntimeError: grid type is not 'LINEAR' or 'LOG'
 
   Examples:
     >>> fh5 = 'e-e.sq.h5'
