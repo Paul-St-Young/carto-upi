@@ -28,10 +28,14 @@ def gen_grid(fp, path):
   name = os.path.basename(fp[path].name)
   if name != 'Grid':
     raise RuntimeError('%s must end with "Grid"' % name)
-  gtype = fp['%s/Type' % path].value[0]
-  if gtype != 'LINEAR':
-    raise NotImplementedError('%s grid type not supported' % gtype)
-  rmin = fp['%s/Start' % path].value[0]
-  rmax = fp['%s/End' % path].value[0]
-  nr = fp['%s/NumGridPoints' % path].value[0]
-  return np.linspace(rmin, rmax, nr)
+  gtype = fp['%s/Type' % path][()][0]
+  rmin = fp['%s/Start' % path][()][0]
+  rmax = fp['%s/End' % path][()][0]
+  nr = fp['%s/NumGridPoints' % path][()][0]
+  if gtype == 'LINEAR':
+    grid = np.linspace(rmin, rmax, nr)
+  elif gtype == 'LOG':
+    grid = np.exp(np.linspace(np.log(rmin), np.log(rmax), nr))
+  else:
+    raise RuntimeError('unknown grid type %s' % gtype)
+  return grid
