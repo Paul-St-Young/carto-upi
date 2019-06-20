@@ -15,6 +15,30 @@ def get_data(fh5, name='Ukj0'):
   fp.close()
   return data
 
+def show_sampling(fh5, nsamp=2):
+  import matplotlib.pyplot as plt
+  grid = get_grid(fh5)
+  nr = len(grid)
+  sampl = []
+  for isamp in range(nsamp):
+    name = 'Sampling_%d' % isamp
+    samp = get_data(fh5, name)
+    sampl.append(samp)
+  nr1, nmover, ntau = sampl[0].shape
+  assert nr1 == nr
+
+  fig, ax_arr = plt.subplots(nsamp, nmover, sharex=True)
+  ax_arr[0, 0].set_ylabel(r'$d\tilde{U}/dR_m$')
+  ax_arr[1, 0].set_ylabel(r'$d^2\tilde{U}/dR_m^2$')
+  for imover in range(nmover):
+    for isamp in range(nsamp):
+      ax = ax_arr[isamp, imover]
+      ax.plot(grid, sampl[isamp][:, imover, 0])
+  for icol in range(nmover):
+    ax_arr[-1, icol].set_xlabel('x')
+  fig.tight_layout()
+  plt.show()
+
 def show_all_ukj(fh5, orders=range(1, 4), itau=0, xmin=0.05, xmax=None):
   import matplotlib.pyplot as plt
   # get raw data
@@ -72,7 +96,7 @@ def show_all_ukj(fh5, orders=range(1, 4), itau=0, xmin=0.05, xmax=None):
     for irow in range(nrow):
       ax_arr[irow, icol].set_yticks([])
   for icol in range(ncol):
-    ax_arr[0, icol].set_xlabel('x')
+    ax_arr[-1, icol].set_xlabel('x')
   ax_arr[0, 0].set_ylabel('ukj')
   ax_arr[1, 0].set_ylabel('dukj/dbeta')
   ax_arr[0, -1].legend()
