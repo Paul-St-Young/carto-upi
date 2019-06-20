@@ -2,6 +2,83 @@ import os
 import h5py
 import numpy as np
 
+def get_grid(fh5):
+  gpath = 'Ukj0/Grid'
+  fp = h5py.File(fh5, 'r')
+  grid = gen_grid(fp, gpath)
+  fp.close()
+  return grid
+
+def get_data(fh5, name='Ukj0'):
+  fp = h5py.File(fh5, 'r')
+  data = fp['%s/Data' % name][()]
+  fp.close()
+  return data
+
+def show_all_ukj(fh5, orders=range(1, 4), itau=0, xmin=0.05, xmax=None):
+  import matplotlib.pyplot as plt
+  # get raw data
+  grid = get_grid(fh5)
+  nr = len(grid)
+  ukjl = []
+  dukjl = []
+  for norder in orders:
+    name = 'Ukj%d' % (norder-1)
+    ukj = get_data(fh5, name)
+    assert len(ukj) == nr
+    ukjl.append(ukj)
+    name = 'dUkjdBeta%d' % (norder-1)
+    dukj = get_data(fh5, name)
+    assert len(dukj) == nr
+    dukjl.append(dukj)
+  # decide plotting range from data
+  if xmax is None:
+    xmax = grid.max()/3.
+  sel = (xmin < grid) & (grid < xmax)
+  imid = min(1, len(orders)-1)
+
+  myy = ukjl[imid]
+  ymin = myy[sel].min()
+  ymax = myy[sel].max()
+
+  mydy = dukjl[imid]
+  dymin = mydy[sel].min()
+  dymax = mydy[sel].max()
+
+  nrow = 2  # U and dU/dBeta
+  ncol = len(orders)
+  fig, ax_arr = plt.subplots(nrow, ncol, sharex=True)
+  ax_arr[0, 0].set_xlim(xmin, xmax)  # x axis is shared
+  for iax, norder in enumerate(orders):
+    # first plot ukj
+    ax = ax_arr[0, iax]
+    ax.set_title('k = %d' % norder)
+    ax.set_ylim(ymin, ymax)
+    ukj = ukjl[iax]
+    nr, nj, ntau = ukj.shape
+    if ntau > 1:
+      msg = 'ukj printed at %d temperatures' % ntau
+      msg += ' use itau to access higher temperatures'
+      print(msg)
+    for j in range(nj):
+      ax.plot(grid, ukj[:, j, itau], label='j=%d' % j)
+    # second plot dukj/dbeta
+    ax = ax_arr[1, iax]
+    ax.set_ylim(dymin, dymax)
+    for j in range(nj):
+      ax.plot(grid, dukj[:, j, itau])
+  # style the axes
+  for icol in range(1, ncol):
+    for irow in range(nrow):
+      ax_arr[irow, icol].set_yticks([])
+  for icol in range(ncol):
+    ax_arr[0, icol].set_xlabel('x')
+  ax_arr[0, 0].set_ylabel('ukj')
+  ax_arr[1, 0].set_ylabel('dukj/dbeta')
+  ax_arr[0, -1].legend()
+  fig.subplots_adjust(wspace=0, hspace=0)
+  plt.show()
+
 def gen_grid(fp, path):
   """Generate numerical grid based on h5 "Grid" specifications.
 
