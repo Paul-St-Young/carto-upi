@@ -65,7 +65,7 @@ def bcc(npart, lbox, ndim=3):
   return pos_in_box(pos, lbox)
 
 def fcc(npart, lbox, ndim=3):
-  """Fody-centered cubic positions
+  """Face-centered cubic positions
 
   Args:
     npart (int): number of particles
