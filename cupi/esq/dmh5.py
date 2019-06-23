@@ -61,13 +61,14 @@ def show_all_ukj(fh5, orders=range(1, 4), itau=0, xmin=0.05, xmax=None):
   sel = (xmin < grid) & (grid < xmax)
   imid = min(1, len(orders)-1)
 
+  ymult = 1.2  # show a big more than the max
   myy = ukjl[imid]
-  ymin = myy[sel].min()
-  ymax = myy[sel].max()
+  ymin = ymult*myy[sel].min()
+  ymax = ymult*myy[sel].max()
 
   mydy = dukjl[imid]
-  dymin = mydy[sel].min()
-  dymax = mydy[sel].max()
+  dymin = ymult*mydy[sel].min()
+  dymax = ymult*mydy[sel].max()
 
   nrow = 2  # U and dU/dBeta
   ncol = len(orders)
@@ -85,12 +86,12 @@ def show_all_ukj(fh5, orders=range(1, 4), itau=0, xmin=0.05, xmax=None):
       msg += ' use itau to access higher temperatures'
       print(msg)
     for j in range(nj):
-      ax.plot(grid, ukj[:, j, itau], label='j=%d' % j)
+      ax.plot(grid, ukj[:, j, itau])
     # second plot dukj/dbeta
     ax = ax_arr[1, iax]
     ax.set_ylim(dymin, dymax)
     for j in range(nj):
-      ax.plot(grid, dukj[:, j, itau])
+      ax.plot(grid, dukj[:, j, itau], label='j=%d' % j)
   # style the axes
   for icol in range(1, ncol):
     for irow in range(nrow):
@@ -99,7 +100,7 @@ def show_all_ukj(fh5, orders=range(1, 4), itau=0, xmin=0.05, xmax=None):
     ax_arr[-1, icol].set_xlabel('x')
   ax_arr[0, 0].set_ylabel('ukj')
   ax_arr[1, 0].set_ylabel('dukj/dbeta')
-  ax_arr[0, -1].legend()
+  ax_arr[-1, -1].legend()
   fig.subplots_adjust(wspace=0, hspace=0)
   plt.show()
 
