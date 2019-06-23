@@ -1,6 +1,6 @@
 import numpy as np
 
-def pos_in_lbox(pos, lbox):
+def pos_in_box(pos, lbox):
   """Positions in [-lbox/2, lbox/2)
 
   Args:
@@ -42,7 +42,7 @@ def sc(npart, lbox, ndim=3):
     raise RuntimeError(msg)
   pos = lbox*cubic_pos(nx)/nx
   assert len(pos) == npart
-  return pos_in_lbox(pos, lbox)
+  return pos_in_box(pos, lbox)
 
 def bcc(npart, lbox, ndim=3):
   """Body-centered cubic positions
@@ -62,7 +62,7 @@ def bcc(npart, lbox, ndim=3):
     nvecs/float(nx), (nvecs+0.5)/nx
   ], axis=0)
   assert len(pos) == npart
-  return pos_in_lbox(pos, lbox)
+  return pos_in_box(pos, lbox)
 
 def fcc(npart, lbox, ndim=3):
   """Fody-centered cubic positions
@@ -86,4 +86,4 @@ def fcc(npart, lbox, ndim=3):
     posul.append(posu)
   pos = lbox*np.concatenate(posul, axis=0)
   assert len(pos) == npart
-  return pos_in_lbox(pos, lbox)
+  return pos_in_box(pos, lbox)
