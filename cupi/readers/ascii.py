@@ -24,3 +24,24 @@ def read_acc(facc):
         entry.update({name: racc})
     data.append(entry)
   return data
+
+def read_cyc(fcyc):
+  with open(fcyc, 'r') as f:
+    lines = f.readlines()
+  # read particle labels
+  labels = []
+  for iline, line in enumerate(lines):
+    tokens = line.split()
+    if tokens[0] == 'type':
+      labels.append(tokens[1])
+    else:
+      break
+  # read cycle lengths
+  data = []
+  for line in lines[iline:]:
+    tokens = line.split()
+    entry = {'ncycle': int(tokens[0])}
+    for itype, label in enumerate(labels):
+      entry.update({label: float(tokens[itype+1])})
+    data.append(entry)
+  return data
