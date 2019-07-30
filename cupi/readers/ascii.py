@@ -45,3 +45,40 @@ def read_cyc(fcyc):
       entry.update({label: float(tokens[itype+1])})
     data.append(entry)
   return data
+
+def parse_sy(text):
+  lines = text.split('\n')
+  def get(tag, ival, dtype):
+    for line in lines:
+      if line.strip().startswith(tag):
+        val_text = line.split()[ival]
+    try:
+      val = dtype(val_text)
+    except UnboundLocalError:
+      msg = '%s not in %s' % (tag, text)
+      raise RuntimeError(msg)
+    except ValueError:
+      print(tag, text)
+    return val
+  beta = get('BETA', 1, float)
+  nslice = get('NSLICES', 1, int)
+  lam = get('TYPE', 2, float)
+  itype = get('TYPE', 3, int)
+  nelec = get('TYPE', 4, int)
+  try:
+    nref = get('NREF', 1, int)
+  except RuntimeError as err:
+    if str(err).startswith('NREF not in '):
+      nref = 0
+  entry = {'beta': beta, 'nslice': nslice, 'nref': nref, 'nelec': nelec, 'lam': lam}
+  if itype > 1:
+    nup = get('TYPE', 5, int)
+    ndn = get('TYPE', 6, int)
+    assert nup+ndn == nelec
+    entry.update({'nup': nup, 'ndn': ndn})
+  return entry
+
+def read_sy(fsy):
+  with open(fsy, 'r') as f:
+    text = f.read()
+  return parse_sy(text)
