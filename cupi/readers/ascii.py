@@ -76,6 +76,10 @@ def parse_sy(text):
     ndn = get('TYPE', 6, int)
     assert nup+ndn == nelec
     entry.update({'nup': nup, 'ndn': ndn})
+  lx = get('BOXSIZE', 1, float)
+  ly = get('BOXSIZE', 2, float)
+  lz = get('BOXSIZE', 3, float)
+  entry['box'] = (lx, ly, lz)
   return entry
 
 def read_sy(fsy):
