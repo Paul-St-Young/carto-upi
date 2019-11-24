@@ -48,10 +48,15 @@ def read_cyc(fcyc):
 
 def parse_sy(text):
   lines = text.split('\n')
-  def get(tag, ival, dtype):
+  def get(tag, ival, dtype, pick=None):
     for line in lines:
       if line.strip().startswith(tag):
-        val_text = line.split()[ival]
+        tokens = line.split()
+        if pick is not None:
+          ipos, myval = pick
+          if tokens[ipos] != myval:
+            continue
+        val_text = tokens[ival]
     try:
       val = dtype(val_text)
     except UnboundLocalError:
@@ -60,26 +65,55 @@ def parse_sy(text):
     except ValueError:
       print(tag, text)
     return val
+  # read temperature
   beta = get('BETA', 1, float)
   nslice = get('NSLICES', 1, int)
-  lam = get('TYPE', 2, float)
-  itype = get('TYPE', 3, int)
-  nelec = get('TYPE', 4, int)
+  # read electrons
+  lam = get('TYPE', 2, float, pick=(1, 'e'))
+  itype = get('TYPE', 3, int, pick=(1, 'e'))
+  nelec = get('TYPE', 4, int, pick=(1, 'e'))
+  entry = {'beta': beta, 'nslice': nslice, 'nelec': nelec, 'lam': lam}
+  if itype > 1:
+    nup = get('TYPE', 5, int, pick=(1, 'e'))
+    ndn = get('TYPE', 6, int, pick=(1, 'e'))
+    assert nup+ndn == nelec
+    entry.update({'nup': nup, 'ndn': ndn})
+  # read box
+  lx = get('BOXSIZE', 1, float)
+  ly = get('BOXSIZE', 2, float)
+  lz = get('BOXSIZE', 3, float)
+  entry['box'] = (lx, ly, lz)
+  # read pairpot
+  kcut = get('CUTK', 1, float)
+  ifewald = get('CUTK', 2, int)
+  entry['kcut'] = kcut
+  entry['ifewald'] = ifewald
+  # read fixnode
   try:
     nref = get('NREF', 1, int)
   except RuntimeError as err:
     if str(err).startswith('NREF not in '):
       nref = 0
-  entry = {'beta': beta, 'nslice': nslice, 'nref': nref, 'nelec': nelec, 'lam': lam}
-  if itype > 1:
-    nup = get('TYPE', 5, int)
-    ndn = get('TYPE', 6, int)
-    assert nup+ndn == nelec
-    entry.update({'nup': nup, 'ndn': ndn})
-  lx = get('BOXSIZE', 1, float)
-  ly = get('BOXSIZE', 2, float)
-  lz = get('BOXSIZE', 3, float)
-  entry['box'] = (lx, ly, lz)
+  try:
+    ifn = get('FIXNODE', 1, int)
+  except RuntimeError as err:
+    if str(err).startswith('FIXNODE'):
+      ifn = 0
+    else:
+      raise err
+  try:
+    get('NOLEAK', 0, str)
+    ifleak = 1
+  except RuntimeError as err:
+    if str(err).startswith('NOLEAK'):
+      ifleak = 0
+    else:
+      raise err
+  entry['nref'] = nref
+  entry['ifn'] = ifn
+  entry['ifleak'] = ifleak
+  # anything I missed
+  entry['text'] = text
   return entry
 
 def read_sy(fsy):
