@@ -9,9 +9,9 @@ from caupi.conf.restart import extract_path
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('frs', type=str, help='restart file')
-  parser.add_argument('ndim', type=int)
-  parser.add_argument('nparts', type=int)
-  parser.add_argument('nslices', type=int)
+  parser.add_argument('--ndim', type=int, default=None)
+  parser.add_argument('--nparts', type=int, default=None)
+  parser.add_argument('--nslices', type=int, default=None)
   parser.add_argument('--fout', type=str, default=None,
     help='path output file')
   parser.add_argument('--force', action='store_true', help='keep on trucking')
@@ -31,6 +31,16 @@ if __name__ == '__main__':
   ndim = args.ndim
   nparts = args.nparts
   nslices = args.nslices
+  if (ndim is None) or (nparts is None) or (nslices is None):
+    # read from input file
+    from caupi.readers.ascii import read_sy
+    fsy = frs.replace('.rs', '.sy')  # find input
+    if not os.path.isfile(fsy):
+      raise RuntimeError('input %s not found' % fsy)
+    meta = read_sy(fsy)
+    ndim = len(meta['box'])
+    nparts = meta['nparts']
+    nslices = meta['nslice']
 
   path = extract_path(frs, ndim, nparts, nslices)
   np.savetxt(fout, path.reshape(ndim*nparts, nslices))
