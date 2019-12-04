@@ -78,11 +78,22 @@ def parse_sy(text):
     ndn = get('TYPE', 6, int, pick=(1, 'e'))
     assert nup+ndn == nelec
     entry.update({'nup': nup, 'ndn': ndn})
+  # read total number of particles
+  nparts = 0
+  for line in lines:
+    if line.strip().startswith('TYPE'):
+      nt = line.split()[4]
+      n = int(nt)
+      nparts += n
+  if nparts == 0:
+    raise RuntimeError('failed to read nparts')
+  entry.update({'nparts': nparts})
   # read box
-  lx = get('BOXSIZE', 1, float)
-  ly = get('BOXSIZE', 2, float)
-  lz = get('BOXSIZE', 3, float)
-  entry['box'] = (lx, ly, lz)
+  for line in lines:
+    if line.strip().startswith('BOXSIZE'):
+      tokens = line.split()
+      box = map(float, tokens[1:])
+  entry['box'] = box
   # read pairpot
   kcut = get('CUTK', 1, float)
   ifewald = get('CUTK', 2, int)
