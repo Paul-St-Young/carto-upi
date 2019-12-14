@@ -64,3 +64,52 @@ def show_path2d(ax, path, box, **kwargs):
     line = ax.plot(x, y, z, marker=marker, **kwargs)
     lines.append(line[0])
   return lines
+
+class Path:
+  def __init__(self, path, iperm):
+    ndim, nparts, nslices = path.shape
+    if len(iperm) != nparts:
+      msg = 'wrong length %d of permutation index' % len(iperm)
+      msg += ' for %d particles' % nparts
+      raise RuntimeError(msg)
+    self.path = path
+    self.iperm = iperm
+    self._ndim = ndim
+    self._nparts = nparts
+    self._nslices = nslices
+  def get_ndim(self):
+    return self._ndim
+  def get_nparts(self):
+    return self._nparts
+  def get_nslices(self):
+    return self._nslices
+
+def find_cycles(path, check=True):
+  # get data from class
+  ndim = path.get_ndim()
+  nparts = path.get_nparts()
+  nslices = path.get_nslices()
+  iperm = path.iperm
+  # find cycles
+  visited = np.zeros(nparts, dtype=bool)
+  cycles = []
+  for ipart in range(nparts):
+    visited[ipart] = True
+    this_cycle = [ipart]
+    jpart = iperm[ipart]
+    for inext in range(nparts):
+      if jpart == ipart:
+        cycles.append(this_cycle)
+        break
+      if visited[jpart]:
+        continue
+      this_cycle.append(jpart)
+      visited[jpart] = True
+      jpart = path.iperm[jpart]
+  if check:
+    ncycles = [len(c) for c in cycles]
+    nparts1 = sum(ncycles)
+    if nparts1 != nparts:
+      msg = 'got %d/%d particles after find_cycles' % (nparts1, nparts)
+      raise RuntimeError(msg)
+  return cycles
