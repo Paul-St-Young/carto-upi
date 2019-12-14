@@ -130,7 +130,16 @@ def show_cycle(ax, path, cycle, slices, **kwargs):
     x1, y1 = path[:, jpart, slices[0]]
     myx = np.array([x[-1], x1])
     myy = np.array([y[-1], y1])
-    myz = np.array([z[-1], z[-1]+1])
+    myz = np.array([z[-1], z[-1]])
     alpha = 0.4
-    ax.plot(myx, myy, myz, marker=markers[j], c=myc, alpha=alpha, lw=2)
-    ax.plot([x1], [y1], [0], marker=markers[j], c=myc, alpha=alpha)
+    # first connect
+    ax.plot(myx, myy, myz, c=myc, alpha=alpha, lw=2)
+    # mark connection source and target
+    m0 = markers[j]
+    m1 = markers[(j+1) % ncycle]
+    ax.plot([x[0]], [y[0]], [z[0]],
+            ls='', marker=m0, c=myc)
+    ax.plot([myx[0]], [myy[0]], [myz[0]],
+            ls='', marker=m0, c=myc)
+    ax.plot([myx[1]], [myy[1]], [myz[1]],
+            ls='', marker=m1, c=myc, alpha=alpha)
