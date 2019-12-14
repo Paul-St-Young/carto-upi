@@ -113,3 +113,24 @@ def find_cycles(path, check=True):
       msg = 'got %d/%d particles after find_cycles' % (nparts1, nparts)
       raise RuntimeError(msg)
   return cycles
+
+def show_cycle(ax, path, cycle, slices, **kwargs):
+  markers = ['^', 's', 'd', 'p', 'h', '8', 'P', 's']
+  nmarker = len(markers)
+  ncycle = len(cycle)
+  if nmarker < ncycle:
+    raise RuntimeError('not enough markers %d/%d' % (nmarker, ncycle))
+  for j, ipart in enumerate(cycle):
+    x, y = path[:, ipart, slices]
+    z = np.arange(len(x))
+    line = ax.plot(x, y, z, **kwargs)
+    myc = line[0].get_color()
+    # plot the first slice of the connecting particle
+    jpart = cycle[(j+1) % ncycle]
+    x1, y1 = path[:, jpart, slices[0]]
+    myx = np.array([x[-1], x1])
+    myy = np.array([y[-1], y1])
+    myz = np.array([z[-1], z[-1]+1])
+    alpha = 0.4
+    ax.plot(myx, myy, myz, marker=markers[j], c=myc, alpha=alpha, lw=2)
+    ax.plot([x1], [y1], [0], marker=markers[j], c=myc, alpha=alpha)
